@@ -9,5 +9,6 @@ import { ActivityController } from './activity.controller';
   imports: [TypeOrmModule.forFeature([ActivityGroupEntity, ActivityEntity])],
   providers: [ActivityService],
   controllers: [ActivityController],
+  exports:[ActivityService]
 })
 export class ActivityModule {}

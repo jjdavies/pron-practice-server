@@ -13,6 +13,11 @@ export class ActivityController {
     return 'return all activities';
   }
 
+  @Get('/newgroup')
+  async makeNewGroup() {
+    const uuid = uuidv4();
+    return this.activityService.createActivityGroup(uuid);
+  }
   @Get(':activityid')
   async getSpecActivity(@Param('activityid') activityid: string) {
     console.log(activityid);
@@ -27,6 +32,9 @@ export class ActivityController {
       activityDto.audioclip !== undefined ? activityDto.audioclip : '';
     activityDto.options =
       activityDto.options !== undefined ? activityDto.options : [''];
+    activityDto.preceding =
+      activityDto.preceding !== undefined ? activityDto.preceding : '';
+      this.activityService.setActivity(activityDto);
     return activityDto;
   }
   @Get('group')
@@ -36,10 +44,5 @@ export class ActivityController {
   @Get('group/:id')
   async getSpecGroup(@Param('activitygroupid') activitygroupid: string) {
     return activitygroupid;
-  }
-  @Get('newgroup')
-  async makeNewGroup() {
-    const uuid = uuidv4();
-    return 'make new group';
   }
 }

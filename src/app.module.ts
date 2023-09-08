@@ -39,6 +39,6 @@ import { OptionService } from './option/option.service';
     OptionController,
     FileController,
   ],
-  providers: [AppService, ActivityService, OptionService, FileService],
+  providers: [AppService],
 })
 export class AppModule {}
