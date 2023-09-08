@@ -7,13 +7,16 @@ import { ActivityGroupEntity } from './activitygroup.entity';
 @Injectable()
 export class ActivityService {
   constructor(
-    @InjectRepository(ActivityEntity)
-    private activityRepository: Repository<ActivityEntity>,
+    @InjectRepository(ActivityGroupEntity)
+    private activityGroupRepository: Repository<ActivityGroupEntity>,
   ) {}
 
   async createActivityGroup(uuid: string): Promise<ActivityGroupEntity> {
     const activityGroupEntity: ActivityGroupEntity = new ActivityGroupEntity();
     activityGroupEntity.uuid = uuid;
+    activityGroupEntity.title = '';
+    activityGroupEntity.activities = [];
+    await this.activityGroupRepository.save(activityGroupEntity);
     return activityGroupEntity;
   }
 }

@@ -3,11 +3,11 @@ import { ActivityGroupEntity } from './activitygroup.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ActivityEntity } from './activity.entity';
 import { ActivityService } from './activity.service';
-import { OptionController } from 'src/option/option.controller';
+import { ActivityController } from './activity.controller';
 
 @Module({
   imports: [TypeOrmModule.forFeature([ActivityGroupEntity, ActivityEntity])],
   providers: [ActivityService],
-  controllers: [OptionController],
+  controllers: [ActivityController],
 })
 export class ActivityModule {}
