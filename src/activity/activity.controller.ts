@@ -31,14 +31,15 @@ export class ActivityController {
   }
   @Get('group')
   async getAllGroups() {
-    return;
+    return 'get all activity groups';
   }
   @Get('group/:id')
-  async getSpecGroup() {
-    return;
+  async getSpecGroup(@Param('activitygroupid') activitygroupid: string) {
+    return activitygroupid;
   }
   @Get('newgroup')
   async makeNewGroup() {
-    return;
+    const uuid = uuidv4();
+    return 'make new group';
   }
 }

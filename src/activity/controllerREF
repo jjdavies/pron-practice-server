@@ -1,0 +1,96 @@
+import {
+  Controller,
+  UseInterceptors,
+  Post,
+  Get,
+  Body,
+  UploadedFile,
+  StreamableFile,
+  Param,
+} from '@nestjs/common';
+import { ActivityService } from './activity.service';
+import { v4 as uuidv4 } from 'uuid';
+import { CreateActivityDto } from 'src/dto/create-activity.dto';
+import { diskStorage } from 'multer';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { CreateAudioDto } from 'src/dto/create-audio.dto';
+import { UpdateTitleDto } from 'src/dto/update-title.dto';
+import { CreateActivityGroupDto } from 'src/dto/create-activity-group.dto';
+import { createReadStream } from 'fs';
+import { join } from 'path';
+
+@Controller('activity')
+export class ActivityController {
+  constructor(private activityService: ActivityService) {}
+
+  @Get('group/:activitygroupid')
+  async getActivityGroup(@Param('activitygroupid') activityGroupID: string) {
+    const activityGroup = await this.activityService.getActivityGroup(
+      activityGroupID,
+    );
+    const activities = await this.activityService.getActivities(
+      activityGroup.activities,
+    );
+    return activities;
+  }
+
+  @Get('group')
+  async createNewGroup() {
+    const createActivityGroupDto = new CreateActivityGroupDto();
+    createActivityGroupDto.uuid = uuidv4();
+    createActivityGroupDto.title = 'BF3G Listening U2';
+    createActivityGroupDto.activities = [];
+    return await this.activityService.createActivityGroup(
+      createActivityGroupDto,
+    );
+  }
+
+  @Post('new/')
+  async createNewActivity(@Body() createActivityDto: CreateActivityDto) {
+    console.log('newactivity');
+    createActivityDto.uuid = uuidv4();
+    createActivityDto.title = '';
+    createActivityDto.audioclip = '';
+    await this.activityService.createActivity(
+      createActivityDto,
+      createActivityDto.activityGroupID,
+    );
+    return { activityID: createActivityDto.uuid };
+  }
+
+  @Get(':activityID')
+  async getActivity(@Param('activityID') activityID: string) {
+    return await this.activityService.getActivity(activityID);
+  }
+
+  @Post('title')
+  async setTitle(@Body() updateTitleDto: UpdateTitleDto) {
+    console.log('n');
+    return this.activityService.setTitle(updateTitleDto);
+  }
+
+  @Get('/file/:fileid')
+  getFile(@Param('fileid') fileid: string): StreamableFile {
+    console.log('hit');
+    const file = createReadStream(join(process.cwd(), 'uploads', fileid));
+    // console.log(file);
+    return new StreamableFile(file);
+  }
+
+  @Post('audio')
+  @UseInterceptors(
+    FileInterceptor('audio', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, cb) => {
+          cb(null, file.originalname);
+        },
+      }),
+    }),
+  )
+  async setAudio(@UploadedFile() file, @Body() createAudioDto: CreateAudioDto) {
+    createAudioDto.storageurl = file.originalname;
+
+    return this.activityService.setAudio(createAudioDto);
+  }
+}

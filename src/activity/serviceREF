@@ -1,0 +1,110 @@
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, In } from 'typeorm';
+
+import { ActivityEntity } from './activity.entity';
+import { CreateActivityDto } from 'src/dto/create-activity.dto';
+import { CreateAudioDto } from 'src/dto/create-audio.dto';
+import { UpdateTitleDto } from 'src/dto/update-title.dto';
+import { CreateActivityGroupDto } from 'src/dto/create-activity-group.dto';
+import { ActivityGroupEntity } from './activity-group.entity';
+import { OptionEntity } from 'src/option/option.entity';
+
+@Injectable()
+export class ActivityService {
+  constructor(
+    @InjectRepository(ActivityEntity)
+    private activityRepository: Repository<ActivityEntity>,
+    @InjectRepository(ActivityGroupEntity)
+    private activityGroupRepository: Repository<ActivityGroupEntity>,
+    @InjectRepository(OptionEntity)
+    private optionRepository: Repository<OptionEntity>,
+  ) {}
+
+  async createActivityGroup(createActivityGroupDto: CreateActivityGroupDto) {
+    const activityGroupEntity: ActivityGroupEntity = new ActivityGroupEntity();
+    activityGroupEntity.uuid = createActivityGroupDto.uuid;
+    activityGroupEntity.title = createActivityGroupDto.title;
+    activityGroupEntity.activities = [];
+    return this.activityGroupRepository.save(activityGroupEntity);
+  }
+
+  async getActivityGroup(activityGroupID: string) {
+    return await this.activityGroupRepository.findOne({
+      where: { uuid: activityGroupID },
+    });
+  }
+
+  async getActivity(activityID: string) {
+    await this.activityRepository.findOne({
+      where: { uuid: activityID },
+    });
+  }
+
+  getOption = async (activity) => {
+    return new Promise<OptionEntity[]>((resolve, reject) => {
+      this.optionRepository
+        .find({ where: { uuid: In(activity.options) } })
+        .then((result: OptionEntity[], err: void) => {
+          // if (err) reject(err);
+          resolve(result);
+        });
+    });
+  };
+
+  async getActivities(activityIDs: string[]) {
+    console.log(activityIDs);
+    const activities = await this.activityRepository.find({
+      where: { uuid: In(activityIDs) },
+    });
+
+    const getOptions = async () => {
+      return Promise.all(activities.map((act) => this.getOption(act)));
+    };
+    const options = await getOptions();
+    const allOptions = options.map((optArr) => {
+      const optArrOpts = optArr.map((opt) => {
+        console.log(opt);
+        return opt;
+      });
+      console.log(optArrOpts);
+      return optArrOpts;
+    });
+    // console.log(allOptions);
+    return { activities: activities, options: options.flat() };
+  }
+
+  async createActivity(
+    createActivityDto: CreateActivityDto,
+    activityGroupID: string,
+  ) {
+    const activity: ActivityEntity = new ActivityEntity();
+    activity.uuid = createActivityDto.uuid;
+    activity.title = createActivityDto.title;
+    activity.audioclip = createActivityDto.audioclip;
+    activity.options = createActivityDto.options;
+    await this.activityRepository.save(activity);
+    const group = await this.activityGroupRepository.findOne({
+      where: { uuid: activityGroupID },
+    });
+    await this.activityGroupRepository.update(
+      { uuid: activityGroupID },
+      { activities: [...group.activities, createActivityDto.uuid] },
+    );
+  }
+
+  async setTitle(updateTitleDto: UpdateTitleDto) {
+    // console.log(activityid);s
+    return this.activityRepository.update(
+      { uuid: updateTitleDto.activityid },
+      { title: updateTitleDto.title },
+    );
+  }
+
+  async setAudio(createAudioDto: CreateAudioDto) {
+    return this.activityRepository.update(
+      { uuid: createAudioDto.activityid },
+      { audioclip: createAudioDto.storageurl },
+    );
+  }
+}

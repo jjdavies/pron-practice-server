@@ -1,0 +1,55 @@
+import { Injectable, UploadedFile } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, In } from 'typeorm';
+
+import { Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
+import { OptionEntity } from './option.entity';
+import { OptionFile } from '../interface/option-file.interface';
+import { CreateOptionDto } from '../dto/create-option.dto';
+
+import { Multer } from 'multer';
+import { v4 as uuidv4 } from 'uuid';
+
+@Injectable()
+export class OptionService {
+  constructor(
+    //@InjectModel('OptionFile')
+    //private readonly optionFileModel: Model<OptionFile>,
+    @InjectRepository(OptionEntity)
+    private optionRepository: Repository<OptionEntity>,
+  ) {}
+
+  // async uploadImage(@UploadedFile() file: Multer.File) {
+  //   const newFile = new this.optionFileModel({ data: file.buffer });
+  //   return (await newFile.save()).id;
+  // }
+
+  async getOptions(options: string[]) {
+    return await this.optionRepository.find({ where: { uuid: In(options) } });
+  }
+
+  async makeNewOptions(newOptions: string[]): Promise<string[]> {
+    const newOptionEntities = newOptions.map((optionUUID) => {
+      const newOptionEntity = new OptionEntity();
+      newOptionEntity.uuid = optionUUID;
+      newOptionEntity.storageurl = '';
+      newOptionEntity.correct = false;
+      console.log(newOptionEntity);
+      return newOptionEntity;
+    });
+    await this.optionRepository.save(newOptionEntities);
+    return newOptions;
+  }
+
+  async makeOption(createOptionDto: CreateOptionDto) {
+    const option: OptionEntity = new OptionEntity();
+    option.uuid = createOptionDto.uuid;
+    option.storageurl = createOptionDto.storageurl;
+    option.correct = createOptionDto.correct;
+    return await this.optionRepository.upsert(
+      [{ uuid: option.uuid, storageurl: option.storageurl, correct: false }],
+      ['uuid'],
+    );
+  }
+}
