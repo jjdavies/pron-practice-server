@@ -13,8 +13,8 @@ export class OptionEntity {
   preceding: string;
 
   @Column()
-  imageid: string;
+  fileuuid: string;
 
   @Column()
-  correct: string;
+  correct: boolean;
 }

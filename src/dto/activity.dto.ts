@@ -1,9 +1,9 @@
 export class ActivityDto {
   id: number;
   uuid: string;
-  preceding:string;
+  preceding: string;
   title: string;
-  audioclip: string;
+  fileuuid: string;
   options: string[];
   activityGroupID: string;
 }

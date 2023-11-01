@@ -2,7 +2,7 @@ import { Entity, Column, PrimaryGeneratedColumn, Unique } from 'typeorm';
 
 @Entity()
 @Unique(['uuid'])
-export class ActivityGroupEntity {
+export class UserEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -10,14 +10,8 @@ export class ActivityGroupEntity {
   uuid: string;
 
   @Column()
-  title: string;
+  name: string;
 
   @Column()
   thumb: string;
-
-  @Column('text', { array: true })
-  activities: string[];
-
-  @Column()
-  deleted: boolean;
 }

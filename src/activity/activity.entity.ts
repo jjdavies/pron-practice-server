@@ -17,4 +17,7 @@ export class ActivityEntity {
 
   @Column()
   preceding: string;
+
+  @Column()
+  fileuuid: string;
 }
